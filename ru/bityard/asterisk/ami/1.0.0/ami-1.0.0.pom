@@ -23,7 +23,6 @@
 <!--        GitHub-->
         <github.global.server>github</github.global.server>
         <github.maven-plugin>0.12</github.maven-plugin>
-        <project.version>1.0.0</project.version>
     </properties>
 
     <distributionManagement>
