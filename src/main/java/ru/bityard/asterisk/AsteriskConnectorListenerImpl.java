@@ -18,7 +18,7 @@ public class AsteriskConnectorListenerImpl implements AsteriskConnectorListener 
     @Autowired
     private AsteriskUtil asteriskUtil;
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public void onApplicationEvent(String str) {

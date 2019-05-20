@@ -23,7 +23,7 @@ public class MainTest {
 
         Properties properties = new Properties();
         try {
-            properties.load(new FileReader("/home/well/Dropbox/12_Java/12011_AMI/src/test/config/config.conf"));
+            properties.load(new FileReader("/home/wellpc/Dropbox/12_Java/12011_AMI/src/test/config/config.conf"));
 
             asteriskConnection.connect(
                     properties.getProperty("server"),
@@ -32,11 +32,23 @@ public class MainTest {
                     properties.getProperty("passAmi"),
                     properties.getProperty("events")
             );
+
+            asteriskConnection.queueSummary("001");
+
             asteriskConnection.makeCallFromQueue(
                     properties.getProperty("testPhoneNumber"),
-                    properties.getProperty("queue"),
+                    properties.getProperty("testQueueNum"),
                     properties.getProperty("testPhoneName")
             );
+
+
+            Thread thread = new Thread();
+            thread.start();
+            while (!thread.isInterrupted()) {
+                // do nothing
+            }
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }

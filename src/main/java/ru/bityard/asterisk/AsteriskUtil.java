@@ -1,9 +1,9 @@
 package ru.bityard.asterisk;
 
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.amiObjects.AmiObject;
 import ru.bityard.asterisk.amiObjects.response.Follows;
@@ -14,8 +14,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @Component
+@Scope("prototype")
 public class AsteriskUtil {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     public String getNumber(String text) {
         if (text == null) return "";
@@ -44,7 +45,7 @@ public class AsteriskUtil {
     }
 
     public void parseEvent(String line, AmiObject amiObject) {
-        log.debug("{}. {}",amiObject.getClass().getSimpleName(),line);
+//        log.debug("{}. {}",amiObject.getClass().getSimpleName(),line);
         String[] params = line.split(": ");
 
         // В response информация ввиде строк без стандарта

@@ -56,7 +56,7 @@ public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
         request.append("Variable: sipaddheader=call-info:\\;answer-after=0".concat("\r\n"));
         request.append("\r\n");
 
-        log.debug("\r\nAMI request is \r\n{}", request.toString());
+//        log.debug("\r\nAMI request is \r\n{}", request.toString());
         asteriskConnector.executeCmd(request.toString());
         return this;
     }

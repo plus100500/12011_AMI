@@ -12,7 +12,6 @@ public class EventAnnouncementImpl implements EventAnnouncement {
 
     @Override
     public void publicEvent(AmiObject amiObject) {
-//        log.debug("New amiObject {}", amiObject);
+        // do nothing
     }
-
 }

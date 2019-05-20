@@ -15,7 +15,7 @@ import java.net.SocketException;
 @Component
 public class AsteriskConnection implements ApplicationContextAware {
 
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private Logger log = LoggerFactory.getLogger(this.getClass());
     private ApplicationContext applicationContext;
 
     private final static Object monitorAsteriskConnection = new Object();
@@ -28,32 +28,29 @@ public class AsteriskConnection implements ApplicationContextAware {
 
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    public void checkConnect() {
+    public boolean checkConnect() {
         synchronized (monitorAsteriskConnection) {
 //        log.debug("CHECKCONNECT. AsteriskConnector object is {}", asteriskConnector);
             try {
-                asteriskConnector.getStatus();
+                return asteriskConnector.getStatus();
             } catch (SocketException se) {
                 log.warn(se.getMessage());
                 log.warn("Trying to connect...");
                 asteriskConnector.connect();
             }
-
-//        if (!asteriskConnector.getStatus()) {
-//            log.warn("Socket is disconnected!");
-//            log.warn("Trying to connect...");
-//            asteriskConnector.connect();
-//        }
+            return false;
         }
     }
 
     public void connect(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
         threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setQueueCapacity(Integer.MAX_VALUE);
         threadPoolTaskExecutor.setKeepAliveSeconds(1);
         threadPoolTaskExecutor.initialize();
+
         asteriskConnector.setParameters(serverIP, portAmi, userAmi, passAmi, events);
-        asteriskConnector.connect();
+        this.checkConnect();
     }
 
     @Override
@@ -63,24 +60,28 @@ public class AsteriskConnection implements ApplicationContextAware {
 
 
     public void makeCallFromQueue(String phoneNumber, String queueNum, String phoneName) {
-        threadPoolTaskExecutor.execute(asteriskCmd.makeCallFromQueue(asteriskConnector, queueNum, phoneNumber, phoneName));
+        execute(asteriskCmd.makeCallFromQueue(asteriskConnector, queueNum, phoneNumber, phoneName));
     }
 
     public void makeCall(String phoneNumber, String phoneName, String timeout, String context, String channelContext, String exten) {
-        threadPoolTaskExecutor.execute(asteriskCmd.makeCall(asteriskConnector, exten, phoneNumber, phoneName, context, channelContext, timeout));
+        execute(asteriskCmd.makeCall(asteriskConnector, exten, phoneNumber, phoneName, context, channelContext, timeout));
     }
 
     public void makeCallFromExten(String phoneNumber, String phoneName, String exten) {
-        threadPoolTaskExecutor.execute(asteriskCmd.makeCallFromExten(asteriskConnector, exten, phoneNumber, phoneName));
+        execute(asteriskCmd.makeCallFromExten(asteriskConnector, exten, phoneNumber, phoneName));
     }
 
     public void queueSummary(String queueNum) {
-        checkConnect();
-        threadPoolTaskExecutor.execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
+        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
     }
 
     public void command(String command) {
-        checkConnect();
-        threadPoolTaskExecutor.execute(asteriskCmd.command(asteriskConnector, command));
+        execute(asteriskCmd.command(asteriskConnector, command));
+    }
+
+    private synchronized void execute(Runnable task) {
+        if (checkConnect())
+            threadPoolTaskExecutor.submit(task);
+
     }
 }

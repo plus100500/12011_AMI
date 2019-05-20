@@ -5,13 +5,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ru.bityard.asterisk.aspects.AsteriskConnectorStatus;
 
 import java.io.*;
 import java.net.*;
+import java.util.Calendar;
 import java.util.Random;
 
 @Component
-public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
+public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnectorStatus, Runnable {
 
     private final static Object monitorAsteriskConnection = new Object();
 
@@ -21,8 +23,12 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
     private String serverIP;
     private Integer portAmi;
 
-@Autowired
-    private AsteriskConnectorListener asteriskConnectorActionListener;
+    private boolean state;
+    private String statusCause;
+    private String authID;
+
+    @Autowired
+    private AsteriskConnectorListener asteriskConnectorListener;
 
     private Thread thread;
 
@@ -31,19 +37,41 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
     int timeoutInMs = 10 * 1000;
     private String amiVersion;
 
+
+    @Override
+    public void setState(boolean state) {
+        this.state = state;
+    }
+
+    @Override
+    public boolean getState() {
+        return state;
+    }
+
+    @Override
+    public void setAuthId(String authId) {
+        this.authID = authId;
+    }
+
+
+    @Override
+    public String getAuthID() {
+        return authID;
+    }
+
+    @Override
+    public void setStatusCause(String statusCause) {
+        this.statusCause = statusCause;
+    }
+
+    @Override
+    public String getStatusCause() {
+        return statusCause;
+    }
+
     @Override
     public void run() {
-
-        StringBuilder request = new StringBuilder();
-        request.append("Action: Login\r\n");
-        request.append("ActionID: ".concat(getActionIdNum()).concat("\r\n"));
-        request.append("Username: ".concat(userAmi).concat("\r\n"));
-        request.append("Secret: ".concat(passAmi).concat("\r\n"));
-        request.append("Events: ".concat(events).concat("\r\n"));
-        request.append("\r\n");
-
-        listenSocket(setAmiVersion(execute(request.toString())));
-
+        listenSocket();
     }
 
     public void setParameters(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
@@ -52,30 +80,55 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
         this.userAmi = userAmi;
         this.passAmi = passAmi;
         this.events = events;
+        this.state = false;
+        this.statusCause = null;
     }
-
 
 
     @Override
     public synchronized void connect() {
-        if (isCorrect()) {
-            try {
-                InetAddress inetAddress = InetAddress.getByName(serverIP);
-                SocketAddress socketAddress = new InetSocketAddress(inetAddress, portAmi);
-                socket = new Socket();
-                socket.connect(socketAddress, timeoutInMs);
-                socket.setKeepAlive(true);
-                thread = new Thread(this);
-                thread.start();
+        synchronized (monitorAsteriskConnection) {
+            if (isCorrect()) {
+                try {
+                    InetAddress inetAddress = InetAddress.getByName(serverIP);
+                    SocketAddress socketAddress = new InetSocketAddress(inetAddress, portAmi);
+                    socket = new Socket();
+                    socket.setKeepAlive(true);
+                    socket.connect(socketAddress, timeoutInMs);
 
-            } catch (SocketTimeoutException ste) {
-                log.error("Timed out waiting for the socket.");
-                ste.printStackTrace();
-            } catch (Exception e) {
-                log.error(e.toString());
-                e.printStackTrace();
+                    authID = getActionIdNum();
+
+                    StringBuilder request = new StringBuilder();
+                    request.append("Action: Login\r\n");
+                    request.append("ActionID: ".concat(authID).concat("\r\n"));
+                    request.append("Username: ".concat(userAmi).concat("\r\n"));
+                    request.append("Secret: ".concat(passAmi).concat("\r\n"));
+                    request.append("Events: ".concat(events).concat("\r\n"));
+                    request.append("\r\n");
+
+                    executeCmd(request.toString());
+
+                    thread = new Thread(this);
+                    thread.start();
+
+                } catch (SocketTimeoutException ste) {
+                    log.error("Timed out waiting for the socket.");
+                    ste.printStackTrace();
+                } catch (Exception e) {
+                    log.error(e.toString());
+                    e.printStackTrace();
+                }
+            }
+
+            long start = Calendar.getInstance().getTimeInMillis();
+            while (timer(start)) {
+                // waiting login
             }
         }
+    }
+
+    private boolean timer(long start) {
+        return (Calendar.getInstance().getTimeInMillis() - start) / 1000 <= 3 && !state;
     }
 
 //    @Scheduled(fixedRate = 5000)
@@ -100,8 +153,8 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
         if (this.userAmi != null && !this.userAmi.isEmpty()) ++i;
         if (this.passAmi != null && !this.passAmi.isEmpty()) ++i;
         if (this.events != null) ++i;
-        if (i < 5 ) {
-            log.warn("{}",result);
+        if (i < 5) {
+            log.warn("{}", result);
             return false;
         } else {
             return true;
@@ -130,15 +183,17 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
         return bufferedReader;
     }
 
-    public void listenSocket(BufferedReader bufferedReader) {
+    public void listenSocket() {
+
         String str;
 
         try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while (true) {
                 str = bufferedReader.readLine();
                 if (str != null) {
 //                    log.debug("AsteriskConnectorImpl. Str is {}",str);
-                    asteriskConnectorActionListener.onApplicationEvent(str);
+                    asteriskConnectorListener.onApplicationEvent(str);
                 }
             }
         } catch (IOException e) {
@@ -155,36 +210,41 @@ public class AsteriskConnectorImpl implements AsteriskConnector, Runnable {
                 if (!socket.isConnected()) {
                     throw new SocketException("Socket is Not connected");
                 }
-                socket.getKeepAlive();
+                if (!socket.getKeepAlive()) {
+                    throw new SocketException("Socket is Not keep alive");
+                }
                 if (!socket.isBound()) {
                     throw new SocketException("Socket is Not bound");
                 }
                 if (socket.isClosed()) {
                     throw new SocketException("Socket is Not closed");
                 }
+                if (!state) {
+                    throw new SocketException("Ami interface is not connected");
+                }
             }
-            return true;
+            return state;
         }
     }
 
-    private synchronized BufferedReader execute(String request) {
-        BufferedReader bufferedReader = null;
-        try {
-//            // write text to the socket
-//            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-//            bufferedWriter.write(request);
-//            bufferedWriter.flush();
-
-//            log.debug("Execute request {}",request);
-            executeCmd(request);
-
-            // read text from the socket
-            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bufferedReader;
-    }
+//    private synchronized BufferedReader execute(String request) {
+//        BufferedReader bufferedReader = null;
+//        try {
+////            // write text to the socket
+////            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+////            bufferedWriter.write(request);
+////            bufferedWriter.flush();
+//
+////            log.debug("Execute request {}",request);
+//            executeCmd(request);
+//
+//            // read text from the socket
+//            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return bufferedReader;
+//    }
 
     @Override
     public synchronized void executeCmd(String request) {
