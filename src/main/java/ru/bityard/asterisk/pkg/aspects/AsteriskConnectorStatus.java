@@ -1,4 +1,4 @@
-package ru.bityard.asterisk.aspects;
+package ru.bityard.asterisk.pkg.aspects;
 
 public interface AsteriskConnectorStatus {
     void setState(boolean status);

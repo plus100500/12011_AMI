@@ -1,4 +1,4 @@
-package ru.bityard.asterisk;
+package ru.bityard.asterisk.pkg;
 
 import java.net.SocketException;
 

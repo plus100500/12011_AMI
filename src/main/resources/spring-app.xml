@@ -11,6 +11,6 @@
     <aop:aspectj-autoproxy/>
     <context:annotation-config/>
     <!--<bean id="monitorAsteriskConnection" class="java.lang.Object"/>-->
-    <context:component-scan base-package="ru.bityard.asterisk"/>
+    <context:component-scan base-package="ru.bityard.asterisk.pkg"/>
 
 </beans>

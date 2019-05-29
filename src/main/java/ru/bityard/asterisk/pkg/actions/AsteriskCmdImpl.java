@@ -1,18 +1,15 @@
-package ru.bityard.asterisk.actions;
+package ru.bityard.asterisk.pkg.actions;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import ru.bityard.asterisk.AsteriskConnector;
+import ru.bityard.asterisk.pkg.AsteriskConnector;
 
 @Component
 public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-
-    public AsteriskCmdImpl() {
-    }
 
     @Override
     public void run() {

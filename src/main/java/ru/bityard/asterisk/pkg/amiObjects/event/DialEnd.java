@@ -1,7 +1,7 @@
-package ru.bityard.asterisk.amiObjects.event;
+package ru.bityard.asterisk.pkg.amiObjects.event;
 
 
-import ru.bityard.asterisk.amiObjects.AmiObject;
+import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.util.LinkedList;
 

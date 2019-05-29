@@ -1,4 +1,4 @@
-package ru.bityard.asterisk.amiObjects;
+package ru.bityard.asterisk.pkg.amiObjects;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
-package ru.bityard.asterisk.actions;
+package ru.bityard.asterisk.pkg.actions;
 
 
-import ru.bityard.asterisk.AsteriskConnector;
+import ru.bityard.asterisk.pkg.AsteriskConnector;
 
 public interface AsteriskCmd {
     AsteriskCmdImpl makeCallFromQueue(AsteriskConnector asteriskConnector, String exten, String phoneNumber, String phoneName);

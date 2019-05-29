@@ -1,11 +1,11 @@
-package ru.bityard.asterisk;
+package ru.bityard.asterisk.pkg;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.bityard.asterisk.aspects.AsteriskConnectorStatus;
+import ru.bityard.asterisk.pkg.aspects.AsteriskConnectorStatus;
 
 import java.io.*;
 import java.net.*;

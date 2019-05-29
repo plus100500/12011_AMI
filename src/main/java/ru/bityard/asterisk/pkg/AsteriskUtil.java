@@ -1,12 +1,12 @@
-package ru.bityard.asterisk;
+package ru.bityard.asterisk.pkg;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import ru.bityard.asterisk.amiObjects.AmiObject;
-import ru.bityard.asterisk.amiObjects.response.Follows;
+import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
+import ru.bityard.asterisk.pkg.amiObjects.response.Follows;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
