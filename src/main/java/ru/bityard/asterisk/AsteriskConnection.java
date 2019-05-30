@@ -2,14 +2,17 @@ package ru.bityard.asterisk;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 
 import java.net.SocketException;
 
+@Component
 public class AsteriskConnection {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -17,19 +20,21 @@ public class AsteriskConnection {
 
     private final static Object monitorAsteriskConnection = new Object();
 
+    @Autowired
     private AsteriskConnector asteriskConnector;
 
+    @Autowired
     private AsteriskCmd asteriskCmd;
 
 //    private Map<String,Object> objectMap;
 
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    public AsteriskConnection() {
-        ctx = new ClassPathXmlApplicationContext("spring-app.xml");
-        asteriskConnector = (AsteriskConnector) ctx.getAutowireCapableBeanFactory().getBean("asteriskConnector");
-        asteriskCmd = (AsteriskCmd) ctx.getAutowireCapableBeanFactory().getBean("asteriskCmd");
-    }
+//    public AsteriskConnection() {
+//        ctx = new ClassPathXmlApplicationContext("spring-app.xml");
+//        asteriskConnector = (AsteriskConnector) ctx.getAutowireCapableBeanFactory().getBean("asteriskConnector");
+//        asteriskCmd = (AsteriskCmd) ctx.getAutowireCapableBeanFactory().getBean("asteriskCmd");
+//    }
 
 
     public boolean checkConnect() {
