@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
 
 @Component
-public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
+public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -21,7 +21,7 @@ public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
         String timeout = "30000";
         String context = "from-internal";
         String channelContext = "from-queue";
-        makeCall(asteriskConnector,exten, phoneNumber, phoneName, context,channelContext, timeout);
+        makeCall(asteriskConnector, exten, phoneNumber, phoneName, context, channelContext, timeout);
         return this;
     }
 
@@ -29,7 +29,7 @@ public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
     public AsteriskCmdImpl makeCallFromExten(AsteriskConnector asteriskConnector, String exten, String phoneNumber, String phoneName) {
         String timeout = "30000";
         String context = "from-internal";
-        makeCall(asteriskConnector,exten, phoneNumber, phoneName, context,null, timeout);
+        makeCall(asteriskConnector, exten, phoneNumber, phoneName, context, null, timeout);
         return this;
     }
 
@@ -88,5 +88,4 @@ public class AsteriskCmdImpl implements AsteriskCmd,Runnable {
         asteriskConnector.executeCmd(request.toString());
         return this;
     }
-
 }

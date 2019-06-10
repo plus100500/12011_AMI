@@ -4,10 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.bityard.asterisk.AsteriskConnection;
+import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
+import ru.bityard.asterisk.pkg.amiObjects.response.CoreShowChannel;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @ContextConfiguration({
         "classpath:spring-app.xml"
@@ -41,16 +45,26 @@ public class MainTest {
                     properties.getProperty("testPhoneName")
             );
 
-
-            Thread thread = new Thread();
-            thread.start();
-            while (!thread.isInterrupted()) {
-                // do nothing
+            AmiObject amiObject = null;
+            Future<AmiObject> amiObjectFuture = asteriskConnection.coreShowChannels(true);
+            if (amiObjectFuture != null) {
+                try {
+                    amiObject = amiObjectFuture.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(((CoreShowChannel) amiObject).toString());
             }
 
+                Thread thread = new Thread();
+                thread.start();
+                while (!thread.isInterrupted()) {
+                    // do nothing
+                }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            } catch(IOException e){
+                e.printStackTrace();
+            }
         }
     }
-}

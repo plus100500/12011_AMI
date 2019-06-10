@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 public class DialEnd extends AmiObject {
     private String privilege;
-    private String  channel;
+    private String channel;
     private String channelState;
     private String channelStateDesc;
     private String callerIDNum;

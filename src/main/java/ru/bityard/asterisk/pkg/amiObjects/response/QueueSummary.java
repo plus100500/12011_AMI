@@ -1,4 +1,4 @@
-package ru.bityard.asterisk.pkg.amiObjects.event;
+package ru.bityard.asterisk.pkg.amiObjects.response;
 
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
@@ -13,7 +13,6 @@ public class QueueSummary extends AmiObject {
     private String holdTime;
     private String talkTime;
     private String longestHoldTime;
-    private String actionID;
     private String line;
 
     public String getLine() {
@@ -81,13 +80,6 @@ public class QueueSummary extends AmiObject {
         this.longestHoldTime = longestHoldTime;
     }
 
-    public String getActionID() {
-        return actionID;
-    }
-
-    public void setActionID(String actionID) {
-        this.actionID = actionID;
-    }
 
     @Override
     public String toString() {
@@ -99,7 +91,6 @@ public class QueueSummary extends AmiObject {
                 ", holdTime='" + holdTime + '\'' +
                 ", talkTime='" + talkTime + '\'' +
                 ", longestHoldTime='" + longestHoldTime + '\'' +
-                ", actionID='" + actionID + '\'' +
                 ", line='" + line + '\'' +
                 "} " + super.toString();
     }

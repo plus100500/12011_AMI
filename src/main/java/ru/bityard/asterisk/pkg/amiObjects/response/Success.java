@@ -5,7 +5,6 @@ import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import java.util.LinkedList;
 
 public class Success extends AmiObject {
-    private String actionID;
     private String message;
     private String eventList;
     private String line;
@@ -23,20 +22,12 @@ public class Success extends AmiObject {
     @Override
     public String toString() {
         return "Success{" +
-                "actionID='" + actionID + '\'' +
                 ", message='" + message + '\'' +
                 ", eventList='" + eventList + '\'' +
                 ", line='" + line + '\'' +
                 "} " + super.toString();
     }
 
-    public String getActionID() {
-        return actionID;
-    }
-
-    public void setActionID(String actionID) {
-        this.actionID = actionID;
-    }
 
     public String getMessage() {
         return message;

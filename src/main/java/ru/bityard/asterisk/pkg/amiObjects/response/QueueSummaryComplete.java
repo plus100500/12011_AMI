@@ -1,19 +1,12 @@
-package ru.bityard.asterisk.pkg.amiObjects.event;
+package ru.bityard.asterisk.pkg.amiObjects.response;
 
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 public class QueueSummaryComplete extends AmiObject {
-    private String actionID;
+
     private String eventList;
     private String listItems;
 
-    public String getActionID() {
-        return actionID;
-    }
-
-    public void setActionID(String actionID) {
-        this.actionID = actionID;
-    }
 
     public String getEventList() {
         return eventList;
@@ -34,7 +27,7 @@ public class QueueSummaryComplete extends AmiObject {
     @Override
     public String toString() {
         return "QueueSummaryComplete{" +
-                "actionID='" + actionID + '\'' +
+
                 ", eventList='" + eventList + '\'' +
                 ", listItems='" + listItems + '\'' +
                 "} " + super.toString();

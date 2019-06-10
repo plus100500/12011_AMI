@@ -6,7 +6,6 @@ import java.util.LinkedList;
 
 public class Follows extends AmiObject {
     private String privilege;
-    private String actionID;
     private String line;
 
     public String getLine() {
@@ -26,21 +25,11 @@ public class Follows extends AmiObject {
         this.privilege = privilege;
     }
 
-    public String getActionID() {
-        return actionID;
-    }
-
-    public void setActionID(String actionID) {
-        this.actionID = actionID;
-    }
-
-
     @Override
     public String toString() {
         return "Follows{" +
                 "privilege='" + privilege + '\'' +
-                ", actionID='" + actionID + '\'' +
-                ", line='" + line + '\'' +
+                    ", line='" + line + '\'' +
                 "} " + super.toString();
     }
 }

@@ -4,13 +4,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
+import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmd;
+import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmdImpl;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
+import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.net.SocketException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 @Component
 public class AsteriskConnection {
@@ -85,12 +89,38 @@ public class AsteriskConnection {
     }
 
     public void command(String command) {
-        execute(asteriskCmd.command(asteriskConnector, command));
+        this.command(command,false);
+    }
+
+    public Future<AmiObject> command(String command, boolean needAnswer) {
+        if (needAnswer) {
+            AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
+            return execute((Callable) asteriskCallableCmd.command(asteriskConnector,command));
+        } else {
+            execute(asteriskCmd.command(asteriskConnector, command));
+            return null;
+        }
+    }
+
+    public Future<AmiObject> coreShowChannels(boolean needAnswer) {
+        if (needAnswer) {
+            AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
+            return execute((Callable) asteriskCallableCmd.coreShowChannels(asteriskConnector));
+        }
+        return null;
     }
 
     private synchronized void execute(Runnable task) {
         if (checkConnect())
             threadPoolTaskExecutor.submit(task);
 
+    }
+
+    // подготовка для вызова нити, которая вернет ответ в виде объекта
+    private synchronized Future<AmiObject> execute(Callable task) {
+        if (checkConnect()) {
+            return threadPoolTaskExecutor.submit(task);
+        }
+        return null;
     }
 }
