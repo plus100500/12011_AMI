@@ -2,6 +2,6 @@ package ru.bityard.asterisk.pkg;
 
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
-public interface EventAnnouncement {
+public interface AsteriskEventListener {
     void publicEvent(AmiObject amiObject);
 }

@@ -7,14 +7,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
+import ru.bityard.asterisk.pkg.AsteriskEventPublisher;
 import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmd;
 import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmdImpl;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.net.SocketException;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 @Component
 public class AsteriskConnection {
@@ -32,6 +35,7 @@ public class AsteriskConnection {
 
 //    private Map<String,Object> objectMap;
 
+    @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
 //    public AsteriskConnection() {
@@ -55,12 +59,16 @@ public class AsteriskConnection {
         }
     }
 
+    public AsteriskEventPublisher getAsteriskEventPublisher() {
+        return asteriskConnector.getAsteriskEventPublisher();
+    }
+
     public void connect(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
-        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setCorePoolSize(1);
-        threadPoolTaskExecutor.setQueueCapacity(Integer.MAX_VALUE);
-        threadPoolTaskExecutor.setKeepAliveSeconds(1);
-        threadPoolTaskExecutor.initialize();
+//        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+//        threadPoolTaskExecutor.setCorePoolSize(1);
+//        threadPoolTaskExecutor.setQueueCapacity(Integer.MAX_VALUE);
+//        threadPoolTaskExecutor.setKeepAliveSeconds(1);
+//        threadPoolTaskExecutor.initialize();
 
         asteriskConnector.setParameters(serverIP, portAmi, userAmi, passAmi, events);
         this.checkConnect();
@@ -92,7 +100,7 @@ public class AsteriskConnection {
         this.command(command,false);
     }
 
-    public Future<AmiObject> command(String command, boolean needAnswer) {
+    public Future<List<AmiObject>> command(String command, boolean needAnswer) {
         if (needAnswer) {
             AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
             return execute((Callable) asteriskCallableCmd.command(asteriskConnector,command));
@@ -102,7 +110,7 @@ public class AsteriskConnection {
         }
     }
 
-    public Future<AmiObject> coreShowChannels(boolean needAnswer) {
+    public Future<List<AmiObject>> coreShowChannels(boolean needAnswer) {
         if (needAnswer) {
             AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
             return execute((Callable) asteriskCallableCmd.coreShowChannels(asteriskConnector));
@@ -117,7 +125,7 @@ public class AsteriskConnection {
     }
 
     // подготовка для вызова нити, которая вернет ответ в виде объекта
-    private synchronized Future<AmiObject> execute(Callable task) {
+    private synchronized Future<List<AmiObject>> execute(Callable task) {
         if (checkConnect()) {
             return threadPoolTaskExecutor.submit(task);
         }

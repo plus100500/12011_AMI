@@ -1,33 +1,31 @@
-package ru.bityard.asterisk.pkg.aspects;
+package ru.bityard.asterisk.pkg.asteriskListeners;
 
-import org.aspectj.lang.annotation.After;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.bityard.asterisk.pkg.EventAnnouncement;
+import ru.bityard.asterisk.pkg.AsteriskEventListener;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import ru.bityard.asterisk.pkg.amiObjects.response.Error;
 import ru.bityard.asterisk.pkg.amiObjects.response.Success;
 
-@Aspect
+import javax.annotation.PostConstruct;
+
 @Component
-public class EventsListener implements EventAnnouncement {
+public class AsteriskEventListenerImpl implements AsteriskEventListener {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private AsteriskConnectorStatus asteriskConnectorStatus;
 
-    @Pointcut("execution(* ru.bityard.asterisk.pkg.EventAnnouncement.publicEvent(..)) && args(amiObject)")
-    public void publicEvent(AmiObject amiObject) {
+    @PostConstruct
+    public void init() {
+        asteriskConnectorStatus.getAsteriskEventPublisher().addListener(this);
     }
 
-
-    @After("publicEvent(amiObject)")
-    public void authorizeEvent(AmiObject amiObject) {
+    @Override
+    public void publicEvent(AmiObject amiObject) {
         switch (amiObject.getClass().getSimpleName()) {
             case "Success": {
                 Success success = (Success) amiObject;

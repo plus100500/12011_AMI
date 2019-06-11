@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.bityard.asterisk.pkg.aspects.AsteriskConnectorStatus;
+import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskConnectorStatus;
 
 import java.io.*;
 import java.net.*;
@@ -28,7 +28,10 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private String authID;
 
     @Autowired
-    private AsteriskConnectorListener asteriskConnectorListener;
+    private AsteriskAmiObjectParser asteriskAmiObjectParser;
+
+    @Autowired
+    private AsteriskEventPublisher asteriskEventPublisher;
 
     private Thread thread;
 
@@ -37,6 +40,13 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     int timeoutInMs = 10 * 1000;
     private String amiVersion;
 
+    @Override
+    public AsteriskEventPublisher getAsteriskEventPublisher() {return this.asteriskEventPublisher; }
+
+    @Override
+    public void setAsteriskEventPublisher(AsteriskEventPublisher asteriskEventPublisher) {
+        this.asteriskEventPublisher = asteriskEventPublisher;
+    }
 
     @Override
     public void setState(boolean state) {
@@ -193,7 +203,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
                 str = bufferedReader.readLine();
                 if (str != null) {
 //                    log.debug("AsteriskConnectorImpl. Str is {}",str);
-                    asteriskConnectorListener.onApplicationEvent(str);
+                    asteriskAmiObjectParser.parseStr(str);
                 }
             }
         } catch (IOException e) {

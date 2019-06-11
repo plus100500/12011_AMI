@@ -10,4 +10,6 @@ public interface AsteriskConnector {
     void connect();
     void close();
     void setParameters(String serverIP, int portAmi, String userAmi, String passAmi, String events);
+    AsteriskEventPublisher getAsteriskEventPublisher();
+    void setAsteriskEventPublisher(AsteriskEventPublisher asteriskEventPublisher);
 }

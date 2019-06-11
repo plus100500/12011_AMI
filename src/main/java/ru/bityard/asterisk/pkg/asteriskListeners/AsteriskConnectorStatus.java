@@ -1,4 +1,6 @@
-package ru.bityard.asterisk.pkg.aspects;
+package ru.bityard.asterisk.pkg.asteriskListeners;
+
+import ru.bityard.asterisk.pkg.AsteriskEventPublisher;
 
 public interface AsteriskConnectorStatus {
     void setState(boolean status);
@@ -7,5 +9,6 @@ public interface AsteriskConnectorStatus {
     String getAuthID();
     void setStatusCause(String statusCause);
     String getStatusCause();
+    AsteriskEventPublisher getAsteriskEventPublisher();
 
 }

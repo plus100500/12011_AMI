@@ -4,16 +4,21 @@ package ru.bityard.asterisk.pkg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
+
 @Component
-public class AsteriskConnectorListenerImpl implements AsteriskConnectorListener {
+public class AsteriskAmiObjectParserImpl implements AsteriskAmiObjectParser {
 
     private AmiObject amiObject;
 
     @Autowired
-    private EventAnnouncement eventAnnouncement;
+    private AsteriskEventPublisher asteriskEventPublisher;
 
     @Autowired
     private AsteriskUtil asteriskUtil;
@@ -21,7 +26,7 @@ public class AsteriskConnectorListenerImpl implements AsteriskConnectorListener 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Override
-    public void onApplicationEvent(String str) {
+    public void parseStr(String str) {
 
 //        log.info("Action is {}", str);
 
@@ -37,7 +42,7 @@ public class AsteriskConnectorListenerImpl implements AsteriskConnectorListener 
                     asteriskUtil.parseEvent(str, amiObject);
                 } else {
                     // Когда приходит пустая строка, значит все строки события DialBegin получены
-                    eventAnnouncement.publicEvent(amiObject);
+                    asteriskEventPublisher.publicEvent(amiObject);
                     amiObject = null;
                 }
             }
