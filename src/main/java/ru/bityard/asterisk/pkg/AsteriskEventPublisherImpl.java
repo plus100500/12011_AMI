@@ -6,32 +6,50 @@ import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Component
 public class AsteriskEventPublisherImpl implements AsteriskEventPublisher {
 
+    private final static Object monitor = new Object();
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private List<AsteriskEventListener> listeners = new ArrayList<>();
+    private List<AsteriskEventListener> listeners = Collections.synchronizedList(new ArrayList<>());
 
     @Override
     public void addListener(AsteriskEventListener toAdd) {
-        listeners.add(toAdd);
+        synchronized (listeners) {
+            listeners.add(toAdd);
+        }
     }
 
     @Override
     public void removeListener(AsteriskEventListener toRemove) {
-        listeners.remove(toRemove);
+        synchronized (listeners) {
+            listeners.remove(toRemove);
+        }
     }
 
     public void publicEvent(AmiObject amiObject) {
-        if (!listeners.isEmpty()) {
-            for (AsteriskEventListener asteriskEventListener : listeners) {
-                if (asteriskEventListener != null) {
-                    asteriskEventListener.publicEvent(amiObject);
+        synchronized (listeners) {
+            if (listeners != null && !listeners.isEmpty()) {
+                for (AsteriskEventListener asteriskEventListener : listeners) {
+                    if (asteriskEventListener != null) {
+                        asteriskEventListener.publicEvent(amiObject);
+                    }
                 }
             }
+//            Iterator<AsteriskEventListener> iterator = listeners.iterator();
+//            while (iterator.hasNext())
+//                synchronized (iterator) {
+//                    AsteriskEventListener asteriskEventListener = iterator.next();
+//                    if (asteriskEventListener != null) {
+//                        asteriskEventListener.publicEvent(amiObject);
+//                    }
+//                }
         }
     }
 }
+

@@ -30,6 +30,9 @@ public class AsteriskUtil {
         String[] amiObjectName = line.split(": ");
 
         try {
+
+            if (amiObjectName[1].toLowerCase().endsWith("complete")) amiObjectName[1] = "Complete";
+
             Class eventClass = Class.forName(
                     this.getClass().getPackage().getName()
                             .concat(".amiObjects.")

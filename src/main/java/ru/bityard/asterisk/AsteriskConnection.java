@@ -38,6 +38,9 @@ public class AsteriskConnection {
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutorForFuture;
+
 //    public AsteriskConnection() {
 //        ctx = new ClassPathXmlApplicationContext("spring-app.xml");
 //        asteriskConnector = (AsteriskConnector) ctx.getAutowireCapableBeanFactory().getBean("asteriskConnector");
@@ -92,9 +95,37 @@ public class AsteriskConnection {
         execute(asteriskCmd.makeCallFromExten(asteriskConnector, exten, phoneNumber, phoneName));
     }
 
-    public void queueSummary(String queueNum) {
-        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
+
+
+
+    private synchronized void execute(Runnable task) {
+        if (checkConnect())
+            threadPoolTaskExecutor.submit(task);
+
     }
+
+    // блок команд с выбором нужен ответ или нет
+
+//    public void queueSummary(String queueNum) {
+//        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
+//
+//    }
+
+    public void queueSummary(String queueNum) {
+        //        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
+        this.queueSummary(queueNum, false);
+    }
+
+    public Future<List<AmiObject>> queueSummary(String queueNum, boolean needAnswer) {
+        if (needAnswer) {
+            AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
+            return execute((Callable) asteriskCallableCmd.queueSummary(asteriskConnector,queueNum));
+        } else {
+            execute(asteriskCmd.queueSummary(asteriskConnector,queueNum));
+        }
+        return null;
+    }
+
 
     public void command(String command) {
         this.command(command,false);
@@ -114,20 +145,16 @@ public class AsteriskConnection {
         if (needAnswer) {
             AsteriskCallableCmd asteriskCallableCmd = new AsteriskCallableCmdImpl();
             return execute((Callable) asteriskCallableCmd.coreShowChannels(asteriskConnector));
+        } else {
+            execute(asteriskCmd.coreShowChannels(asteriskConnector));
         }
         return null;
-    }
-
-    private synchronized void execute(Runnable task) {
-        if (checkConnect())
-            threadPoolTaskExecutor.submit(task);
-
     }
 
     // подготовка для вызова нити, которая вернет ответ в виде объекта
     private synchronized Future<List<AmiObject>> execute(Callable task) {
         if (checkConnect()) {
-            return threadPoolTaskExecutor.submit(task);
+            return threadPoolTaskExecutorForFuture.submit(task);
         }
         return null;
     }

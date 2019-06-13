@@ -9,4 +9,5 @@ public interface AsteriskCallableCmd {
     List<AmiObject> call() throws Exception;
     AsteriskCallableCmd command(AsteriskConnector asteriskConnector, String command);
     AsteriskCallableCmdImpl coreShowChannels(AsteriskConnector asteriskConnector);
+    AsteriskCallableCmdImpl queueSummary(AsteriskConnector asteriskConnector, String queueNum);
 }

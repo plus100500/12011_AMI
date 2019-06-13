@@ -74,9 +74,14 @@ public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
         request.append("Queue: ".concat(queueNum).concat("\r\n"));
         request.append("\r\n");
         asteriskConnector.executeCmd(request.toString());
-        return this;
+        return queueSummary(asteriskConnector,request);
     }
 
+    @Override
+    public AsteriskCmdImpl queueSummary(AsteriskConnector asteriskConnector, StringBuilder request) {
+        asteriskConnector.executeCmd(request.toString());
+        return this;
+    }
 
     @Override
     public AsteriskCmdImpl command(AsteriskConnector asteriskConnector, String command) {
@@ -86,6 +91,28 @@ public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
         request.append("Command: ".concat(command).concat("\r\n"));
         request.append("\r\n");
         asteriskConnector.executeCmd(request.toString());
+        return this;
+    }
+
+    @Override
+    public AsteriskCmdImpl coreShowChannels(AsteriskConnector asteriskConnector, StringBuilder request) {
+        asteriskConnector.executeCmd(request.toString());
+        return this;
+    }
+
+    @Override
+    public AsteriskCmdImpl coreShowChannels(AsteriskConnector asteriskConnector) {
+        StringBuilder request = new StringBuilder();
+        String actionId = asteriskConnector.getActionIdNum();
+        request.append("ActionID: ".concat(actionId).concat("\r\n"));
+        request.append("Action: CoreShowChannels\r\n");
+        request.append("\r\n");
+        return coreShowChannels(asteriskConnector,request);
+    }
+
+    @Override
+    public AsteriskCmdImpl executeCmd(AsteriskConnector asteriskConnector, String request) {
+        asteriskConnector.executeCmd(request);
         return this;
     }
 }

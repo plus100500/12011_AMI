@@ -1,4 +1,4 @@
-package ru.bityard.asterisk.pkg.amiObjects.response;
+package ru.bityard.asterisk.pkg.amiObjects.event;
 
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 

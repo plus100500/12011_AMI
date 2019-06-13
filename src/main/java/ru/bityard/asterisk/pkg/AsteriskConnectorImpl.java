@@ -4,7 +4,9 @@ package ru.bityard.asterisk.pkg;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
+import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskConnectorStatus;
 
 import java.io.*;
@@ -32,6 +34,12 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
 
     @Autowired
     private AsteriskEventPublisher asteriskEventPublisher;
+
+    @Autowired
+    private AsteriskCmd asteriskCmd;
+
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     private Thread thread;
 
@@ -293,5 +301,15 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         int randomNum = rand.nextInt((1000 - 1) + 1) + 1;
 
         return String.valueOf(randomNum);
+    }
+
+    @Override
+    public AsteriskCmd getAsteriskCmd() {
+        return asteriskCmd;
+    }
+
+    @Override
+    public ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
+        return threadPoolTaskExecutor;
     }
 }

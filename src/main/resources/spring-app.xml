@@ -17,4 +17,8 @@
         <property name="keepAliveSeconds" value="1"/>
     </bean>
 
+    <bean id="threadPoolTaskExecutorForFuture" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="keepAliveSeconds" value="1"/>
+    </bean>
+
 </beans>

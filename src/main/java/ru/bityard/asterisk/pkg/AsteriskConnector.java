@@ -1,5 +1,8 @@
 package ru.bityard.asterisk.pkg;
 
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
+
 import java.net.SocketException;
 
 public interface AsteriskConnector {
@@ -12,4 +15,6 @@ public interface AsteriskConnector {
     void setParameters(String serverIP, int portAmi, String userAmi, String passAmi, String events);
     AsteriskEventPublisher getAsteriskEventPublisher();
     void setAsteriskEventPublisher(AsteriskEventPublisher asteriskEventPublisher);
+    AsteriskCmd getAsteriskCmd();
+    ThreadPoolTaskExecutor getThreadPoolTaskExecutor();
 }

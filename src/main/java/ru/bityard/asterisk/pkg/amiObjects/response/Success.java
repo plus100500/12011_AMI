@@ -22,7 +22,7 @@ public class Success extends AmiObject {
     @Override
     public String toString() {
         return "Success{" +
-                ", message='" + message + '\'' +
+                "message='" + message + '\'' +
                 ", eventList='" + eventList + '\'' +
                 ", line='" + line + '\'' +
                 "} " + super.toString();

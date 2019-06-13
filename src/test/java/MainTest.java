@@ -1,6 +1,7 @@
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.bityard.asterisk.AsteriskConnection;
@@ -37,7 +38,7 @@ public class MainTest {
                     properties.getProperty("events")
             );
 
-            asteriskConnection.queueSummary("001");
+//            printList(asteriskConnection.queueSummary("001",true));
 
 //            asteriskConnection.makeCallFromQueue(
 //                    properties.getProperty("testPhoneNumber"),
@@ -45,29 +46,47 @@ public class MainTest {
 //                    properties.getProperty("testPhoneName")
 //            );
 
-            List<AmiObject> amiObjects = null;
-            Future<List<AmiObject>> amiObjectFuture = asteriskConnection.coreShowChannels(true);
-            if (amiObjectFuture != null) {
-                try {
-                    amiObjects = amiObjectFuture.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
 
-                for (AmiObject amiObject : amiObjects) {
-                    System.out.println(amiObject.toString());
-                }
-            }
+//            printList(asteriskConnection.coreShowChannels(true));
 
-            Thread thread = new Thread();
-            thread.start();
-            while (!thread.isInterrupted()) {
-                // do nothing
+            int i = 0;
+            while (!Thread.currentThread().isInterrupted()) {
+                ++i;
+                if (i == 10) {
+                    check1();
+                    check2();
+                    i = 0;
+                }
             }
 
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void printList(Future<List<AmiObject>> amiObjectFuture) {
+        List<AmiObject> amiObjects = null;
+        if (amiObjectFuture != null) {
+            try {
+                amiObjects = amiObjectFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            for (AmiObject amiObject : amiObjects) {
+                System.out.println(amiObject.toString());
+            }
+        }
+    }
+
+
+    public void check1() {
+        printList(asteriskConnection.queueSummary("001",true));
+    }
+
+
+    public void check2() {
+        printList(asteriskConnection.coreShowChannels(true));
     }
 }
