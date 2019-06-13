@@ -1,7 +1,6 @@
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.bityard.asterisk.AsteriskConnection;
@@ -9,10 +8,13 @@ import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @ContextConfiguration({
         "classpath:spring-app.xml"
@@ -49,12 +51,14 @@ public class MainTest {
 
 //            printList(asteriskConnection.coreShowChannels(true));
 
+            List<Thread> threadList = new ArrayList<>();
+
             int i = 0;
             while (!Thread.currentThread().isInterrupted()) {
                 ++i;
                 if (i == 10) {
-                    check1();
-                    check2();
+                    printList(asteriskConnection.queueSummary("001", true));
+                    printList(asteriskConnection.coreShowChannels(true));
                     i = 0;
                 }
             }
@@ -65,28 +69,23 @@ public class MainTest {
         }
     }
 
+
     private void printList(Future<List<AmiObject>> amiObjectFuture) {
         List<AmiObject> amiObjects = null;
         if (amiObjectFuture != null) {
             try {
-                amiObjects = amiObjectFuture.get();
-            } catch (InterruptedException | ExecutionException e) {
+                amiObjects = amiObjectFuture.get(5000, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 e.printStackTrace();
             }
 
-            for (AmiObject amiObject : amiObjects) {
-                System.out.println(amiObject.toString());
+            if (amiObjects != null) {
+                for (AmiObject amiObject : amiObjects) {
+                    System.out.println(amiObject.toString());
+                }
+            } else {
+                System.out.println("AmiObjects is null");
             }
         }
-    }
-
-
-    public void check1() {
-        printList(asteriskConnection.queueSummary("001",true));
-    }
-
-
-    public void check2() {
-        printList(asteriskConnection.coreShowChannels(true));
     }
 }

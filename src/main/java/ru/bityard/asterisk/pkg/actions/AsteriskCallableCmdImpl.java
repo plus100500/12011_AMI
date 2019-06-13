@@ -30,6 +30,7 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
         asteriskConnector.getThreadPoolTaskExecutor().submit(asteriskConnector.getAsteriskCmd().executeCmd(asteriskConnector, request.toString()));
 
         while (listen) {
+//            log.info("AsteriskCallableCmdImpl {}", Thread.currentThread().getName());
 //            Ждем пока не получим все объекты
         }
         asteriskConnector.getAsteriskEventPublisher().removeListener(this);
