@@ -10,6 +10,7 @@ import ru.bityard.asterisk.pkg.amiObjects.event.Complete;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, AsteriskEventListener {
 
@@ -19,20 +20,22 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
     private StringBuilder request;
     private AsteriskConnector asteriskConnector;
     private List<AmiObject> amiObjects = new ArrayList<>();
-    private boolean listen;
+    private AtomicBoolean listen = new AtomicBoolean();
 
     @Override
     public List<AmiObject> call() throws Exception {
 
-        log.info("AsteriskCallableCmdImpl {}", Thread.currentThread().getName());
+//        log.info("AsteriskCallableCmdImpl {}", Thread.currentThread().getName());
 
 //        asteriskConnector.executeCmd(request.toString());
         asteriskConnector.getThreadPoolTaskExecutor().submit(asteriskConnector.getAsteriskCmd().executeCmd(asteriskConnector, request.toString()));
 
-        while (listen) {
+        while (listen.get()) {
 //            log.info("AsteriskCallableCmdImpl {}", Thread.currentThread().getName());
 //            Ждем пока не получим все объекты
+//            log.info("While listen is {}",listen);
         }
+//        log.info("All objects are received - {}",listen);
         asteriskConnector.getAsteriskEventPublisher().removeListener(this);
         return amiObjects;
     }
@@ -41,8 +44,9 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
     public void publicEvent(AmiObject amiObject) {
         if (amiObject.getActionID() != null && !amiObject.getActionID().isEmpty() && amiObject.getActionID().equals(actionId)) {
             amiObjects.add(amiObject);
-            log.info("Catch object is {}", amiObject);
-            if (amiObject instanceof Complete) listen = false;
+//            log.info("Catch object is {}", amiObject);
+            if (amiObject instanceof Complete) listen.set(false);
+//            log.info("listen is {}",listen);
         }
     }
 
@@ -50,7 +54,7 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
     public AsteriskCallableCmdImpl command(AsteriskConnector asteriskConnector, String command) {
         this.asteriskConnector = asteriskConnector;
         asteriskConnector.getAsteriskEventPublisher().addListener(this);
-        listen = true;
+        listen.set(true);
         request = new StringBuilder();
         actionId = asteriskConnector.getActionIdNum();
         request.append("ActionID: ".concat(actionId).concat("\r\n"));
@@ -64,7 +68,7 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
     public AsteriskCallableCmdImpl coreShowChannels(AsteriskConnector asteriskConnector) {
         this.asteriskConnector = asteriskConnector;
         asteriskConnector.getAsteriskEventPublisher().addListener(this);
-        listen = true;
+        listen.set(true);
         request = new StringBuilder();
         actionId = asteriskConnector.getActionIdNum();
         request.append("ActionID: ".concat(actionId).concat("\r\n"));
@@ -77,7 +81,7 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
     public AsteriskCallableCmdImpl queueSummary(AsteriskConnector asteriskConnector, String queueNum) {
         this.asteriskConnector = asteriskConnector;
         asteriskConnector.getAsteriskEventPublisher().addListener(this);
-        listen = true;
+        listen.set(true);
         request = new StringBuilder();
         actionId = asteriskConnector.getActionIdNum();
         request.append("ActionID: ".concat(actionId).concat("\r\n"));

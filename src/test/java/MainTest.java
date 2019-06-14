@@ -54,15 +54,13 @@ public class MainTest {
             List<Thread> threadList = new ArrayList<>();
 
             int i = 0;
-            while (!Thread.currentThread().isInterrupted()) {
+            while(i<100) {
+                printList(asteriskConnection.queueSummary("001", true));
+                printList(asteriskConnection.coreShowChannels(true));
+                printList(asteriskConnection.queueSummary("001", true));
+                printList(asteriskConnection.coreShowChannels(true));
                 ++i;
-                if (i == 10) {
-                    printList(asteriskConnection.queueSummary("001", true));
-                    printList(asteriskConnection.coreShowChannels(true));
-                    i = 0;
-                }
             }
-
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,10 +69,16 @@ public class MainTest {
 
 
     private void printList(Future<List<AmiObject>> amiObjectFuture) {
+
         List<AmiObject> amiObjects = null;
         if (amiObjectFuture != null) {
             try {
-                amiObjects = amiObjectFuture.get(5000, TimeUnit.MILLISECONDS);
+                System.out.println(amiObjectFuture.hashCode());
+                while (!amiObjectFuture.isDone()) {
+
+                }
+
+                amiObjects = amiObjectFuture.get(3500, TimeUnit.MILLISECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 e.printStackTrace();
             }

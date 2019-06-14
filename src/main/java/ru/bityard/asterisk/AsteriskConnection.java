@@ -14,7 +14,9 @@ import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -40,6 +42,8 @@ public class AsteriskConnection {
 
     @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutorForFuture;
+
+    private Map<String,AsteriskCallableCmd> futureCommands = new HashMap<>();
 
 //    public AsteriskConnection() {
 //        ctx = new ClassPathXmlApplicationContext("spring-app.xml");
@@ -154,7 +158,9 @@ public class AsteriskConnection {
     // подготовка для вызова нити, которая вернет ответ в виде объекта
     private synchronized Future<List<AmiObject>> execute(Callable task) {
         if (checkConnect()) {
-            return threadPoolTaskExecutorForFuture.submit(task);
+            Future result = threadPoolTaskExecutorForFuture.submit(task);
+            log.info("Future<List<AmiObject>> hashcode is {}",result.hashCode());
+            return result;
         }
         return null;
     }

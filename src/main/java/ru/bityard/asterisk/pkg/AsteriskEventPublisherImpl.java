@@ -21,6 +21,7 @@ public class AsteriskEventPublisherImpl implements AsteriskEventPublisher {
     @Override
     public void addListener(AsteriskEventListener toAdd) {
         synchronized (listeners) {
+//            log.info("Add listener - {} : {}",toAdd,toAdd.hashCode());
             listeners.add(toAdd);
         }
     }
@@ -28,6 +29,7 @@ public class AsteriskEventPublisherImpl implements AsteriskEventPublisher {
     @Override
     public void removeListener(AsteriskEventListener toRemove) {
         synchronized (listeners) {
+//            log.info("Remove listener - {} : {}",toRemove,toRemove.hashCode());
             listeners.remove(toRemove);
         }
     }
