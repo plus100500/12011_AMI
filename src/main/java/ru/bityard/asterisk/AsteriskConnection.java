@@ -159,7 +159,7 @@ public class AsteriskConnection {
     private synchronized Future<List<AmiObject>> execute(Callable task) {
         if (checkConnect()) {
             Future result = threadPoolTaskExecutorForFuture.submit(task);
-            log.info("Future<List<AmiObject>> hashcode is {}",result.hashCode());
+//            log.info("Future<List<AmiObject>> hashcode is {}",result.hashCode());
             return result;
         }
         return null;

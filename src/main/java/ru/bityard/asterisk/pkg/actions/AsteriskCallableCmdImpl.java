@@ -6,6 +6,7 @@ import ru.bityard.asterisk.pkg.AsteriskConnector;
 import ru.bityard.asterisk.pkg.AsteriskEventListener;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import ru.bityard.asterisk.pkg.amiObjects.event.Complete;
+import ru.bityard.asterisk.pkg.amiObjects.response.Follows;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
         if (amiObject.getActionID() != null && !amiObject.getActionID().isEmpty() && amiObject.getActionID().equals(actionId)) {
             amiObjects.add(amiObject);
 //            log.info("Catch object is {}", amiObject);
-            if (amiObject instanceof Complete) listen.set(false);
+            if ((amiObject instanceof Complete) || (amiObject instanceof Follows)) listen.set(false);
 //            log.info("listen is {}",listen);
         }
     }

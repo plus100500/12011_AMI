@@ -53,15 +53,16 @@ public class MainTest {
 
             List<Thread> threadList = new ArrayList<>();
 
-            int i = 0;
-            while(i<100) {
-                printList(asteriskConnection.queueSummary("001", true));
-                printList(asteriskConnection.coreShowChannels(true));
-                printList(asteriskConnection.queueSummary("001", true));
-                printList(asteriskConnection.coreShowChannels(true));
-                ++i;
-            }
+            printList(asteriskConnection.command("database show BLACKLIST",true));
 
+//            int i = 0;
+//            while(i<100) {
+//                printList(asteriskConnection.queueSummary("001", true));
+//                printList(asteriskConnection.coreShowChannels(true));
+//                printList(asteriskConnection.queueSummary("001", true));
+//                printList(asteriskConnection.coreShowChannels(true));
+//                ++i;
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
