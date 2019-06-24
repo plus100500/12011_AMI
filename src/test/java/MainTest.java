@@ -54,6 +54,7 @@ public class MainTest {
             List<Thread> threadList = new ArrayList<>();
 
             printList(asteriskConnection.command("database show BLACKLIST",true));
+            printList(asteriskConnection.coreShowChannels(true));
 
 //            int i = 0;
 //            while(i<100) {

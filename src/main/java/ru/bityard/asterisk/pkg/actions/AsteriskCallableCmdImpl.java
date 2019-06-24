@@ -6,9 +6,11 @@ import ru.bityard.asterisk.pkg.AsteriskConnector;
 import ru.bityard.asterisk.pkg.AsteriskEventListener;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import ru.bityard.asterisk.pkg.amiObjects.event.Complete;
+import ru.bityard.asterisk.pkg.amiObjects.response.Error;
 import ru.bityard.asterisk.pkg.amiObjects.response.Follows;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,8 +32,8 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
 
 //        asteriskConnector.executeCmd(request.toString());
         asteriskConnector.getThreadPoolTaskExecutor().submit(asteriskConnector.getAsteriskCmd().executeCmd(asteriskConnector, request.toString()));
-
-        while (listen.get()) {
+        Calendar start = Calendar.getInstance();
+        while (listen.get() || checkTimout(start,5)) {
 //            log.info("AsteriskCallableCmdImpl {}", Thread.currentThread().getName());
 //            Ждем пока не получим все объекты
 //            log.info("While listen is {}",listen);
@@ -41,12 +43,20 @@ public class AsteriskCallableCmdImpl implements AsteriskCallableCmd, Callable, A
         return amiObjects;
     }
 
+    private boolean checkTimout(Calendar start, int waitSeconds) {
+        return (Calendar.getInstance().getTimeInMillis() - (waitSeconds * 1000L)) < start.getTimeInMillis();
+    }
+
     @Override
     public void publicEvent(AmiObject amiObject) {
         if (amiObject.getActionID() != null && !amiObject.getActionID().isEmpty() && amiObject.getActionID().equals(actionId)) {
             amiObjects.add(amiObject);
 //            log.info("Catch object is {}", amiObject);
             if ((amiObject instanceof Complete) || (amiObject instanceof Follows)) listen.set(false);
+            if (amiObject instanceof Error) {
+                log.warn("\r\n\r\nCan't execute AMI request for request: \r\n{}Response is {}\r\n", request, ((Error) amiObject).getMessage());
+                listen.set(false);
+            }
 //            log.info("listen is {}",listen);
         }
     }
