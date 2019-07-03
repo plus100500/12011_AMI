@@ -16,13 +16,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-@ContextConfiguration({
-        "classpath:spring-app.xml"
-})
-@RunWith(SpringJUnit4ClassRunner.class)
 public class MainTest {
 
-    @Autowired
     private AsteriskConnection asteriskConnection;
 
     @Test
@@ -32,7 +27,7 @@ public class MainTest {
         try {
             properties.load(new FileReader("/home/wellpc/Dropbox/12_Java/12011_AMI/src/test/config/config.conf"));
 
-            asteriskConnection.connect(
+            asteriskConnection = new AsteriskConnection(
                     properties.getProperty("server"),
                     Integer.valueOf(properties.getProperty("portAmi")),
                     properties.getProperty("userAmi"),

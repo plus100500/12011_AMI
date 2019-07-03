@@ -3,8 +3,6 @@ package ru.bityard.asterisk.pkg;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import ru.bityard.asterisk.pkg.amiObjects.response.Follows;
 
@@ -13,8 +11,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-@Component
-@Scope("prototype")
 public class AsteriskUtil {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 

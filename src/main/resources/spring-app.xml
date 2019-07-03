@@ -7,18 +7,6 @@
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context.xsd">
 
-    <!--    <aop:aspectj-autoproxy/>-->
     <context:annotation-config/>
-    <!--<bean id="monitorAsteriskConnection" class="java.lang.Object"/>-->
-    <context:component-scan base-package="ru.bityard.asterisk"/>
-
-    <bean id="threadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="maxPoolSize" value="1"/>
-        <property name="keepAliveSeconds" value="1"/>
-    </bean>
-
-    <bean id="threadPoolTaskExecutorForFuture" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
-        <property name="keepAliveSeconds" value="1"/>
-    </bean>
 
 </beans>

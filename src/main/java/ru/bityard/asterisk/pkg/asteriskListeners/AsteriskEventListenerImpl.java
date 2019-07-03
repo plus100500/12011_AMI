@@ -2,24 +2,21 @@ package ru.bityard.asterisk.pkg.asteriskListeners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskEventListener;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 import ru.bityard.asterisk.pkg.amiObjects.response.Error;
 import ru.bityard.asterisk.pkg.amiObjects.response.Success;
 
-import javax.annotation.PostConstruct;
-
-@Component
 public class AsteriskEventListenerImpl implements AsteriskEventListener {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
     private AsteriskConnectorStatus asteriskConnectorStatus;
 
-    @PostConstruct
+    public AsteriskEventListenerImpl(AsteriskConnectorStatus asteriskConnectorStatus) {
+        this.asteriskConnectorStatus = asteriskConnectorStatus;
+    }
+
     public void init() {
         asteriskConnectorStatus.getAsteriskEventPublisher().addListener(this);
     }

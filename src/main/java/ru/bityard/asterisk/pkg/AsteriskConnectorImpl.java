@@ -3,18 +3,16 @@ package ru.bityard.asterisk.pkg;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskConnectorStatus;
+import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskEventListenerImpl;
 
 import java.io.*;
 import java.net.*;
 import java.util.Calendar;
 import java.util.Random;
 
-@Component
 public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnectorStatus, Runnable {
 
     private final static Object monitorAsteriskConnection = new Object();
@@ -29,19 +27,15 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private String statusCause;
     private String authID;
 
-    @Autowired
+
     private AsteriskAmiObjectParser asteriskAmiObjectParser;
-
-    @Autowired
     private AsteriskEventPublisher asteriskEventPublisher;
-
-    @Autowired
     private AsteriskCmd asteriskCmd;
-
-    @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private AsteriskEventListener asteriskEventListener;
 
     private Thread thread;
+
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private Socket socket;
@@ -49,7 +43,9 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private String amiVersion;
 
     @Override
-    public AsteriskEventPublisher getAsteriskEventPublisher() {return this.asteriskEventPublisher; }
+    public AsteriskEventPublisher getAsteriskEventPublisher() {
+        return this.asteriskEventPublisher;
+    }
 
     @Override
     public void setAsteriskEventPublisher(AsteriskEventPublisher asteriskEventPublisher) {
@@ -92,22 +88,39 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         listenSocket();
     }
 
-    public void setParameters(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
-        this.serverIP = serverIP;
-        this.portAmi = portAmi;
+    public AsteriskConnectorImpl(String serverIP, int portAmi, String userAmi, String passAmi, String events, AsteriskCmd asteriskCmd, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
         this.userAmi = userAmi;
         this.passAmi = passAmi;
         this.events = events;
+        this.serverIP = serverIP;
+        this.portAmi = portAmi;
         this.state = false;
         this.statusCause = null;
+        this.asteriskCmd = asteriskCmd;
+
+        asteriskEventPublisher = new AsteriskEventPublisherImpl();
+
+        asteriskEventListener = new AsteriskEventListenerImpl(this);
+        asteriskEventPublisher.addListener(asteriskEventListener);
+
+        asteriskAmiObjectParser = new AsteriskAmiObjectParserImpl(asteriskEventPublisher);
+
+        this.threadPoolTaskExecutor = threadPoolTaskExecutor;
     }
 
+    @Override
+    public ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
+        return threadPoolTaskExecutor;
+    }
 
     @Override
     public synchronized void connect() {
         synchronized (monitorAsteriskConnection) {
             if (isCorrect()) {
                 try {
+
+                    if (socket != null) socket.close();
+
                     InetAddress inetAddress = InetAddress.getByName(serverIP);
                     SocketAddress socketAddress = new InetSocketAddress(inetAddress, portAmi);
                     socket = new Socket();
@@ -148,15 +161,6 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private boolean timer(long start) {
         return (Calendar.getInstance().getTimeInMillis() - start) / 1000 <= 3 && !state;
     }
-
-//    @Scheduled(fixedRate = 5000)
-//    private void checkConnect() {
-//        if (!getStatus()) {
-//            log.warn("Socket is disconnected!");
-//            log.warn("Trying to reconnect...");
-//            connect();
-//        }
-//    }
 
     private boolean isCorrect() {
         StringBuilder result = new StringBuilder();
@@ -245,25 +249,6 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         }
     }
 
-//    private synchronized BufferedReader execute(String request) {
-//        BufferedReader bufferedReader = null;
-//        try {
-////            // write text to the socket
-////            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-////            bufferedWriter.write(request);
-////            bufferedWriter.flush();
-//
-////            log.debug("Execute request {}",request);
-//            executeCmd(request);
-//
-//            // read text from the socket
-//            bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return bufferedReader;
-//    }
-
     @Override
     public synchronized void executeCmd(String request) {
         try {
@@ -308,8 +293,4 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         return asteriskCmd;
     }
 
-    @Override
-    public ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
-        return threadPoolTaskExecutor;
-    }
 }

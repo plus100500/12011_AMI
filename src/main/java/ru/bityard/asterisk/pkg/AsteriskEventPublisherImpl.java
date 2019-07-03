@@ -2,14 +2,12 @@ package ru.bityard.asterisk.pkg;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Component
 public class AsteriskEventPublisherImpl implements AsteriskEventPublisher {
 
     private final static Object monitor = new Object();
@@ -43,14 +41,6 @@ public class AsteriskEventPublisherImpl implements AsteriskEventPublisher {
                     }
                 }
             }
-//            Iterator<AsteriskEventListener> iterator = listeners.iterator();
-//            while (iterator.hasNext())
-//                synchronized (iterator) {
-//                    AsteriskEventListener asteriskEventListener = iterator.next();
-//                    if (asteriskEventListener != null) {
-//                        asteriskEventListener.publicEvent(amiObject);
-//                    }
-//                }
         }
     }
 }

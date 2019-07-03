@@ -3,10 +3,8 @@ package ru.bityard.asterisk.pkg.actions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
 
-@Component
 public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -74,7 +72,7 @@ public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
         request.append("Queue: ".concat(queueNum).concat("\r\n"));
         request.append("\r\n");
         asteriskConnector.executeCmd(request.toString());
-        return queueSummary(asteriskConnector,request);
+        return queueSummary(asteriskConnector, request);
     }
 
     @Override
@@ -107,7 +105,7 @@ public class AsteriskCmdImpl implements AsteriskCmd, Runnable {
         request.append("ActionID: ".concat(actionId).concat("\r\n"));
         request.append("Action: CoreShowChannels\r\n");
         request.append("\r\n");
-        return coreShowChannels(asteriskConnector,request);
+        return coreShowChannels(asteriskConnector, request);
     }
 
     @Override

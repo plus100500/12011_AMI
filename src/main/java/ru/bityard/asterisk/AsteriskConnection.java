@@ -7,10 +7,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
+import ru.bityard.asterisk.pkg.AsteriskConnectorImpl;
 import ru.bityard.asterisk.pkg.AsteriskEventPublisher;
 import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmd;
 import ru.bityard.asterisk.pkg.actions.AsteriskCallableCmdImpl;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
+import ru.bityard.asterisk.pkg.actions.AsteriskCmdImpl;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.net.SocketException;
@@ -21,7 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
-@Component
 public class AsteriskConnection {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
@@ -29,27 +30,32 @@ public class AsteriskConnection {
 
     private final static Object monitorAsteriskConnection = new Object();
 
-    @Autowired
     private AsteriskConnector asteriskConnector;
 
-    @Autowired
     private AsteriskCmd asteriskCmd;
 
 //    private Map<String,Object> objectMap;
 
-    @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
-    @Autowired
     private ThreadPoolTaskExecutor threadPoolTaskExecutorForFuture;
 
     private Map<String,AsteriskCallableCmd> futureCommands = new HashMap<>();
 
-//    public AsteriskConnection() {
-//        ctx = new ClassPathXmlApplicationContext("spring-app.xml");
-//        asteriskConnector = (AsteriskConnector) ctx.getAutowireCapableBeanFactory().getBean("asteriskConnector");
-//        asteriskCmd = (AsteriskCmd) ctx.getAutowireCapableBeanFactory().getBean("asteriskCmd");
-//    }
+    public AsteriskConnection(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
+        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.setKeepAliveSeconds(1);
+        threadPoolTaskExecutor.initialize();
+
+        threadPoolTaskExecutorForFuture = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutorForFuture.setKeepAliveSeconds(1);
+        threadPoolTaskExecutorForFuture.initialize();
+
+        asteriskCmd = new AsteriskCmdImpl();
+        asteriskConnector = new AsteriskConnectorImpl(serverIP, portAmi, userAmi, passAmi, events, asteriskCmd,threadPoolTaskExecutor);
+
+    }
 
 
     public boolean checkConnect() {
@@ -70,22 +76,9 @@ public class AsteriskConnection {
         return asteriskConnector.getAsteriskEventPublisher();
     }
 
-    public void connect(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
-//        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-//        threadPoolTaskExecutor.setCorePoolSize(1);
-//        threadPoolTaskExecutor.setQueueCapacity(Integer.MAX_VALUE);
-//        threadPoolTaskExecutor.setKeepAliveSeconds(1);
-//        threadPoolTaskExecutor.initialize();
-
-        asteriskConnector.setParameters(serverIP, portAmi, userAmi, passAmi, events);
+    public void connect() {
         this.checkConnect();
     }
-//
-//    @Override
-//    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-//        this.applicationContext = applicationContext;
-//    }
-
 
     public void makeCallFromQueue(String phoneNumber, String queueNum, String phoneName) {
         execute(asteriskCmd.makeCallFromQueue(asteriskConnector, queueNum, phoneNumber, phoneName));
@@ -108,15 +101,7 @@ public class AsteriskConnection {
 
     }
 
-    // блок команд с выбором нужен ответ или нет
-
-//    public void queueSummary(String queueNum) {
-//        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
-//
-//    }
-
     public void queueSummary(String queueNum) {
-        //        execute(asteriskCmd.queueSummary(asteriskConnector, queueNum));
         this.queueSummary(queueNum, false);
     }
 
