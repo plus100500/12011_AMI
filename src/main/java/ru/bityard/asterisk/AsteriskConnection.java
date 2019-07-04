@@ -26,7 +26,6 @@ import java.util.concurrent.FutureTask;
 public class AsteriskConnection {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
-    private ApplicationContext ctx;
 
     private final static Object monitorAsteriskConnection = new Object();
 
@@ -39,8 +38,6 @@ public class AsteriskConnection {
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     private ThreadPoolTaskExecutor threadPoolTaskExecutorForFuture;
-
-    private Map<String,AsteriskCallableCmd> futureCommands = new HashMap<>();
 
     public AsteriskConnection(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
         threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
@@ -92,7 +89,15 @@ public class AsteriskConnection {
         execute(asteriskCmd.makeCallFromExten(asteriskConnector, exten, phoneNumber, phoneName));
     }
 
-
+    public void close() {
+        if (asteriskConnector != null) asteriskConnector.close();
+        asteriskConnector = null;
+        asteriskCmd = null;
+        if (threadPoolTaskExecutorForFuture != null) threadPoolTaskExecutorForFuture.shutdown();
+        if (threadPoolTaskExecutor != null) threadPoolTaskExecutor.shutdown();
+        threadPoolTaskExecutorForFuture = null;
+        threadPoolTaskExecutor = null;
+    }
 
 
     private synchronized void execute(Runnable task) {
