@@ -50,7 +50,11 @@ public class AsteriskConnection {
         threadPoolTaskExecutorForFuture.initialize();
 
         asteriskCmd = new AsteriskCmdImpl();
+
         asteriskConnector = new AsteriskConnectorImpl(serverIP, portAmi, userAmi, passAmi, events, asteriskCmd,threadPoolTaskExecutor);
+        asteriskConnector.connect();
+        Thread thread = new Thread(asteriskConnector);
+        thread.start();
 
     }
 

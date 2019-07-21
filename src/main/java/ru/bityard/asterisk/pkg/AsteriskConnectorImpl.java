@@ -33,8 +33,6 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private AsteriskCmd asteriskCmd;
     private AsteriskEventListener asteriskEventListener;
 
-    private Thread thread;
-
     private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
@@ -139,9 +137,6 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
 
                     executeCmd(request.toString());
 
-                    thread = new Thread(this);
-                    thread.start();
-
                 } catch (SocketTimeoutException ste) {
                     log.error("Timed out waiting for the socket.");
                     ste.printStackTrace();
@@ -153,6 +148,13 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
 
             long start = Calendar.getInstance().getTimeInMillis();
             while (timer(start)) {
+                try {
+                    synchronized (this) {
+                        wait(100);
+                    }
+                } catch (InterruptedException e) {
+                    log.error(e.getMessage());
+                }
                 // waiting login
             }
         }
@@ -274,7 +276,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         } catch (IOException e) {
             log.warn(e.getMessage());
         } finally {
-            thread.interrupt();
+            Thread.currentThread().interrupt();
         }
     }
 
