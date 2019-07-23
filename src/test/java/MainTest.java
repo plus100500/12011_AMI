@@ -1,8 +1,4 @@
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.bityard.asterisk.AsteriskConnection;
 import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
@@ -35,6 +31,7 @@ public class MainTest {
                     properties.getProperty("events")
             );
 
+//            asteriskConnection.checkConnect();
 //            printList(asteriskConnection.queueSummary("001",true));
 
 //            asteriskConnection.makeCallFromQueue(
@@ -48,8 +45,8 @@ public class MainTest {
 
             List<Thread> threadList = new ArrayList<>();
 
-            printList(asteriskConnection.command("database show BLACKLIST",true));
-            printList(asteriskConnection.coreShowChannels(true));
+//            printList(asteriskConnection.command("database show BLACKLIST", true));
+//            printList(asteriskConnection.coreShowChannels(true));
 
 //            int i = 0;
 //            while(i<100) {
@@ -72,7 +69,9 @@ public class MainTest {
             try {
                 System.out.println(amiObjectFuture.hashCode());
                 while (!amiObjectFuture.isDone()) {
-
+                    synchronized (this) {
+                        this.wait(100);
+                    }
                 }
 
                 amiObjects = amiObjectFuture.get(3500, TimeUnit.MILLISECONDS);

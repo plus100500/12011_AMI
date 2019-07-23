@@ -5,7 +5,7 @@ import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 
 import java.net.SocketException;
 
-public interface AsteriskConnector extends Runnable {
+public interface AsteriskConnector {
 
     boolean getStatus() throws SocketException;
     String getActionIdNum();
@@ -16,5 +16,4 @@ public interface AsteriskConnector extends Runnable {
     void setAsteriskEventPublisher(AsteriskEventPublisher asteriskEventPublisher);
     AsteriskCmd getAsteriskCmd();
     ThreadPoolTaskExecutor getThreadPoolTaskExecutor();
-    void run();
 }

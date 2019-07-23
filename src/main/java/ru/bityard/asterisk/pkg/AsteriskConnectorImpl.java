@@ -12,8 +12,9 @@ import java.io.*;
 import java.net.*;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnectorStatus, Runnable {
+public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnectorStatus {
 
     private final static Object monitorAsteriskConnection = new Object();
 
@@ -23,7 +24,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private String serverIP;
     private Integer portAmi;
 
-    private boolean state;
+    private AtomicBoolean state;
     private String statusCause;
     private String authID;
 
@@ -52,12 +53,12 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
 
     @Override
     public void setState(boolean state) {
-        this.state = state;
+        this.state.set(state);
     }
 
     @Override
     public boolean getState() {
-        return state;
+        return state.get();
     }
 
     @Override
@@ -81,18 +82,13 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         return statusCause;
     }
 
-    @Override
-    public void run() {
-        listenSocket();
-    }
-
     public AsteriskConnectorImpl(String serverIP, int portAmi, String userAmi, String passAmi, String events, AsteriskCmd asteriskCmd, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
         this.userAmi = userAmi;
         this.passAmi = passAmi;
         this.events = events;
         this.serverIP = serverIP;
         this.portAmi = portAmi;
-        this.state = false;
+        state = new AtomicBoolean(false);
         this.statusCause = null;
         this.asteriskCmd = asteriskCmd;
 
@@ -116,7 +112,6 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         synchronized (monitorAsteriskConnection) {
             if (isCorrect()) {
                 try {
-
                     if (socket != null) socket.close();
 
                     InetAddress inetAddress = InetAddress.getByName(serverIP);
@@ -124,6 +119,10 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
                     socket = new Socket();
                     socket.setKeepAlive(true);
                     socket.connect(socketAddress, timeoutInMs);
+
+                    ReadMsg readMsg = new ReadMsg(socket.getInputStream());
+                    Thread threadReadMsg = new Thread(readMsg);
+                    threadReadMsg.start();
 
                     authID = getActionIdNum();
 
@@ -161,7 +160,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     }
 
     private boolean timer(long start) {
-        return (Calendar.getInstance().getTimeInMillis() - start) / 1000 <= 3 && !state;
+        return (Calendar.getInstance().getTimeInMillis() - start) / 1000 <= 3 && !state.get();
     }
 
     private boolean isCorrect() {
@@ -207,21 +206,37 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         return bufferedReader;
     }
 
-    public void listenSocket() {
+    class ReadMsg implements Runnable {
 
-        String str;
+        private InputStream inputStream;
 
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            while (true) {
-                str = bufferedReader.readLine();
-                if (str != null) {
-//                    log.debug("AsteriskConnectorImpl. Str is {}",str);
-                    asteriskAmiObjectParser.parseStr(str);
+        public ReadMsg(InputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+
+        @Override
+        public void run() {
+
+            String str;
+
+            try {
+                DataInputStream in = new DataInputStream(new BufferedInputStream(inputStream));
+                while (true) {
+                    str = in.readLine();
+                    if (str != null) {
+//                        log.debug("AsteriskConnectorImpl. Str is {}", str);
+                        asteriskAmiObjectParser.parseStr(str);
+                    } else {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage());
+                        }
+                    }
                 }
+            } catch (IOException e) {
+                log.error(e.toString());
             }
-        } catch (IOException e) {
-            log.error(e.toString());
         }
     }
 
@@ -243,11 +258,11 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
                 if (socket.isClosed()) {
                     throw new SocketException("Socket is Not closed");
                 }
-                if (!state) {
+                if (!state.get()) {
                     throw new SocketException("Ami interface is not connected");
                 }
             }
-            return state;
+            return state.get();
         }
     }
 
@@ -260,18 +275,26 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
             bufferedWriter.write(request);
             bufferedWriter.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
+            closeSocket();
         }
     }
 
     @Override
     public void close() {
-        try {
 
-            StringBuilder request = new StringBuilder();
-            request.append("Action: Logoff\r\n");
-            request.append("\r\n");
-            executeCmd(request.toString());
+        StringBuilder request = new StringBuilder();
+        request.append("Action: Logoff\r\n");
+        request.append("\r\n");
+        executeCmd(request.toString());
+        closeSocket();
+
+    }
+
+    private void closeSocket() {
+        try {
+            socket.getInputStream().close();
+            socket.getOutputStream().close();
             socket.close();
         } catch (IOException e) {
             log.warn(e.getMessage());
