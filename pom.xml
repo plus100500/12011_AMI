@@ -6,7 +6,7 @@
 
     <groupId>ru.bityard.asterisk</groupId>
     <artifactId>ami</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.1</version>
     <properties>
         <!--Maven-->
         <maven.version>3.8.0</maven.version>

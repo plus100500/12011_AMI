@@ -17,11 +17,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-public class AsteriskConnection {
+public class AsteriskConnection implements Runnable{
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final static Object monitorAsteriskConnection = new Object();
+    private final static Object monitorWait = new Object();
 
     private AsteriskConnector asteriskConnector;
 
@@ -46,8 +47,10 @@ public class AsteriskConnection {
         asteriskCmd = new AsteriskCmdImpl();
 
         asteriskConnector = new AsteriskConnectorImpl(serverIP, portAmi, userAmi, passAmi, events, asteriskCmd, threadPoolTaskExecutor);
-//        asteriskConnector.connect();
+    }
 
+    @Override
+    public void run() {
         CheckConnect checkConnect = new CheckConnect();
         Thread threadCheckConnect = new Thread(checkConnect);
         threadCheckConnect.start();
@@ -64,7 +67,9 @@ public class AsteriskConnection {
             while (true) {
                 try {
                         checkConnect();
-                        Thread.sleep(5000);
+                        synchronized (monitorWait) {
+                            monitorWait.wait(5000);
+                        }
 
                 } catch (InterruptedException ie) {
                     log.error(ie.getMessage());

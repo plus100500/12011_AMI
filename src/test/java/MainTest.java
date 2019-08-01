@@ -30,6 +30,13 @@ public class MainTest {
                     properties.getProperty("passAmi"),
                     properties.getProperty("events")
             );
+            Thread thread = new Thread(asteriskConnection);
+            thread.start();
+            try {
+                thread.join();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }
 
 //            asteriskConnection.checkConnect();
 //            printList(asteriskConnection.queueSummary("001",true));
