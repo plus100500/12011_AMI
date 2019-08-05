@@ -2,7 +2,6 @@ package ru.bityard.asterisk;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.bityard.asterisk.pkg.AsteriskConnector;
 import ru.bityard.asterisk.pkg.AsteriskConnectorImpl;
 import ru.bityard.asterisk.pkg.AsteriskEventPublisher;
@@ -14,8 +13,7 @@ import ru.bityard.asterisk.pkg.amiObjects.AmiObject;
 
 import java.net.SocketException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class AsteriskConnection implements Runnable{
 
@@ -30,23 +28,30 @@ public class AsteriskConnection implements Runnable{
 
 //    private Map<String,Object> objectMap;
 
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private ThreadPoolExecutor threadPoolExecutor;
 
-    private ThreadPoolTaskExecutor threadPoolTaskExecutorForFuture;
+    private ThreadPoolExecutor threadPoolExecutorForFuture;
 
     public AsteriskConnection(String serverIP, int portAmi, String userAmi, String passAmi, String events) {
-        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutor.setMaxPoolSize(1);
-        threadPoolTaskExecutor.setKeepAliveSeconds(1);
-        threadPoolTaskExecutor.initialize();
+//        threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+//        threadPoolTaskExecutor.setMaxPoolSize(1);
+//        threadPoolTaskExecutor.setKeepAliveSeconds(1);
+//        threadPoolTaskExecutor.initialize();
+//
+//        threadPoolTaskExecutorForFuture = new ThreadPoolTaskExecutor();
+//        threadPoolTaskExecutorForFuture.setKeepAliveSeconds(1);
+//        threadPoolTaskExecutorForFuture.initialize();
 
-        threadPoolTaskExecutorForFuture = new ThreadPoolTaskExecutor();
-        threadPoolTaskExecutorForFuture.setKeepAliveSeconds(1);
-        threadPoolTaskExecutorForFuture.initialize();
+        BlockingQueue blockingQueue1 = new LinkedBlockingQueue();
+        threadPoolExecutor = new ThreadPoolExecutor(1,1,1000,TimeUnit.MILLISECONDS,blockingQueue1);
+
+        BlockingQueue blockingQueue2 = new LinkedBlockingQueue();
+        threadPoolExecutorForFuture = new ThreadPoolExecutor(1,1,1000,TimeUnit.MILLISECONDS,blockingQueue1);
+
 
         asteriskCmd = new AsteriskCmdImpl();
 
-        asteriskConnector = new AsteriskConnectorImpl(serverIP, portAmi, userAmi, passAmi, events, asteriskCmd, threadPoolTaskExecutor);
+        asteriskConnector = new AsteriskConnectorImpl(serverIP, portAmi, userAmi, passAmi, events, asteriskCmd, threadPoolExecutor);
     }
 
     @Override
@@ -119,16 +124,16 @@ public class AsteriskConnection implements Runnable{
         if (asteriskConnector != null) asteriskConnector.close();
         asteriskConnector = null;
         asteriskCmd = null;
-        if (threadPoolTaskExecutorForFuture != null) threadPoolTaskExecutorForFuture.shutdown();
-        if (threadPoolTaskExecutor != null) threadPoolTaskExecutor.shutdown();
-        threadPoolTaskExecutorForFuture = null;
-        threadPoolTaskExecutor = null;
+        if (threadPoolExecutorForFuture != null) threadPoolExecutorForFuture.shutdown();
+        if (threadPoolExecutor != null) threadPoolExecutor.shutdown();
+        threadPoolExecutorForFuture = null;
+        threadPoolExecutor = null;
     }
 
 
     private synchronized void execute(Runnable task) {
         if (checkConnect())
-            threadPoolTaskExecutor.submit(task);
+            threadPoolExecutor.submit(task);
 
     }
 
@@ -174,7 +179,7 @@ public class AsteriskConnection implements Runnable{
     // подготовка для вызова нити, которая вернет ответ в виде объекта
     private synchronized Future<List<AmiObject>> execute(Callable task) {
         if (checkConnect()) {
-            Future result = threadPoolTaskExecutorForFuture.submit(task);
+            Future result = threadPoolExecutorForFuture.submit(task);
 //            log.info("Future<List<AmiObject>> hashcode is {}",result.hashCode());
             return result;
         }

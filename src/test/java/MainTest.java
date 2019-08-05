@@ -32,37 +32,37 @@ public class MainTest {
             );
             Thread thread = new Thread(asteriskConnection);
             thread.start();
-            try {
-                thread.join();
-            } catch (InterruptedException ie) {
-                ie.printStackTrace();
-            }
+//            try {
+//                thread.join();
+//            } catch (InterruptedException ie) {
+//                ie.printStackTrace();
+//            }
 
-//            asteriskConnection.checkConnect();
-//            printList(asteriskConnection.queueSummary("001",true));
+            asteriskConnection.checkConnect();
+            printList(asteriskConnection.queueSummary("001",true));
 
-//            asteriskConnection.makeCallFromQueue(
-//                    properties.getProperty("testPhoneNumber"),
-//                    properties.getProperty("testQueueNum"),
-//                    properties.getProperty("testPhoneName")
-//            );
+            asteriskConnection.makeCallFromQueue(
+                    properties.getProperty("testPhoneNumber"),
+                    properties.getProperty("testQueueNum"),
+                    properties.getProperty("testPhoneName")
+            );
 
 
-//            printList(asteriskConnection.coreShowChannels(true));
+            printList(asteriskConnection.coreShowChannels(true));
 
             List<Thread> threadList = new ArrayList<>();
 
-//            printList(asteriskConnection.command("database show BLACKLIST", true));
-//            printList(asteriskConnection.coreShowChannels(true));
+            printList(asteriskConnection.command("database show BLACKLIST", true));
+            printList(asteriskConnection.coreShowChannels(true));
 
-//            int i = 0;
-//            while(i<100) {
-//                printList(asteriskConnection.queueSummary("001", true));
-//                printList(asteriskConnection.coreShowChannels(true));
-//                printList(asteriskConnection.queueSummary("001", true));
-//                printList(asteriskConnection.coreShowChannels(true));
-//                ++i;
-//            }
+            int i = 0;
+            while(i<100) {
+                printList(asteriskConnection.queueSummary("001", true));
+                printList(asteriskConnection.coreShowChannels(true));
+                printList(asteriskConnection.queueSummary("001", true));
+                printList(asteriskConnection.coreShowChannels(true));
+                ++i;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

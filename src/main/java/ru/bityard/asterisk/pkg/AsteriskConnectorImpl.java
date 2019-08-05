@@ -3,7 +3,6 @@ package ru.bityard.asterisk.pkg;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import ru.bityard.asterisk.pkg.actions.AsteriskCmd;
 import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskConnectorStatus;
 import ru.bityard.asterisk.pkg.asteriskListeners.AsteriskEventListenerImpl;
@@ -12,6 +11,7 @@ import java.io.*;
 import java.net.*;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnectorStatus {
@@ -34,7 +34,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
     private AsteriskCmd asteriskCmd;
     private AsteriskEventListener asteriskEventListener;
 
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private Socket socket;
@@ -82,7 +82,7 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
         return statusCause;
     }
 
-    public AsteriskConnectorImpl(String serverIP, int portAmi, String userAmi, String passAmi, String events, AsteriskCmd asteriskCmd, ThreadPoolTaskExecutor threadPoolTaskExecutor) {
+    public AsteriskConnectorImpl(String serverIP, int portAmi, String userAmi, String passAmi, String events, AsteriskCmd asteriskCmd, ThreadPoolExecutor threadPoolExecutor) {
         this.userAmi = userAmi;
         this.passAmi = passAmi;
         this.events = events;
@@ -99,12 +99,12 @@ public class AsteriskConnectorImpl implements AsteriskConnector, AsteriskConnect
 
         asteriskAmiObjectParser = new AsteriskAmiObjectParserImpl(asteriskEventPublisher);
 
-        this.threadPoolTaskExecutor = threadPoolTaskExecutor;
+        this.threadPoolExecutor = threadPoolExecutor;
     }
 
     @Override
-    public ThreadPoolTaskExecutor getThreadPoolTaskExecutor() {
-        return threadPoolTaskExecutor;
+    public ThreadPoolExecutor getThreadPoolExecutor() {
+        return threadPoolExecutor;
     }
 
     @Override
