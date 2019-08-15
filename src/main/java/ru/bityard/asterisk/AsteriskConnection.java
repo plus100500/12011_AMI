@@ -15,7 +15,7 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class AsteriskConnection implements Runnable{
+public class AsteriskConnection implements Runnable {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -43,10 +43,10 @@ public class AsteriskConnection implements Runnable{
 //        threadPoolTaskExecutorForFuture.initialize();
 
         BlockingQueue blockingQueue1 = new LinkedBlockingQueue();
-        threadPoolExecutor = new ThreadPoolExecutor(1,1,1000,TimeUnit.MILLISECONDS,blockingQueue1);
+        threadPoolExecutor = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, blockingQueue1);
 
         BlockingQueue blockingQueue2 = new LinkedBlockingQueue();
-        threadPoolExecutorForFuture = new ThreadPoolExecutor(1,1,1000,TimeUnit.MILLISECONDS,blockingQueue1);
+        threadPoolExecutorForFuture = new ThreadPoolExecutor(1, 1, 1000, TimeUnit.MILLISECONDS, blockingQueue1);
 
 
         asteriskCmd = new AsteriskCmdImpl();
@@ -61,7 +61,7 @@ public class AsteriskConnection implements Runnable{
         threadCheckConnect.start();
         try {
             threadCheckConnect.join();
-        }catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
             log.error(ie.getMessage());
         }
     }
@@ -71,10 +71,10 @@ public class AsteriskConnection implements Runnable{
         public void run() {
             while (true) {
                 try {
-                        checkConnect();
-                        synchronized (monitorWait) {
-                            monitorWait.wait(5000);
-                        }
+                    checkConnect();
+                    synchronized (monitorWait) {
+                        monitorWait.wait(5000);
+                    }
 
                 } catch (InterruptedException ie) {
                     log.error(ie.getMessage());
@@ -83,6 +83,16 @@ public class AsteriskConnection implements Runnable{
         }
     }
 
+    public boolean getState() {
+        synchronized (monitorAsteriskConnection) {
+            try {
+                return asteriskConnector.getStatus();
+            } catch (SocketException se) {
+                log.error("Exception when getStatus from AsteriskConnector:", se);
+            }
+            return false;
+        }
+    }
 
     public boolean checkConnect() {
         synchronized (monitorAsteriskConnection) {
