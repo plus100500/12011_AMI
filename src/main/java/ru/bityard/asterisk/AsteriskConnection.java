@@ -86,11 +86,10 @@ public class AsteriskConnection implements Runnable {
     public boolean getState() {
         synchronized (monitorAsteriskConnection) {
             try {
-                return asteriskConnector.getStatus();
-            } catch (SocketException se) {
-                log.error("Exception when getStatus from AsteriskConnector:", se);
+                return asteriskConnector != null && asteriskConnector.getStatus();
+            } catch (SocketException e) {
+                return false;
             }
-            return false;
         }
     }
 
